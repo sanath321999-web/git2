@@ -6,7 +6,7 @@ resource "aws_vpc" "test1" {
 }
 resource "aws_subnet" "public_subnet_1" {
   vpc_id            = aws_vpc.test1.id
-  cidr_block        = "10.0.1.0/24"
+  cidr_block        = var.vpc_cidr
   availability_zone = var.availability_zone
   tags = {
     Name = var.subnet_name
@@ -15,7 +15,7 @@ resource "aws_subnet" "public_subnet_1" {
 }
 resource "aws_subnet" "public_subnet_2" {
   vpc_id            = aws_vpc.test1.id
-  cidr_block        = "10.0.2.0/24"
+  cidr_block        = var.vpc_cidr
   availability_zone = var.availability_zone
     tags = {
         Name = var.subnet_name
@@ -42,7 +42,7 @@ resource "aws_nat_gateway" "nat_gw" {
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.test1.id
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block = var.vpc_cidr
     gateway_id = aws_internet_gateway.igw.id
   }
     tags = {
@@ -52,7 +52,7 @@ resource "aws_route_table" "public_rt" {
 resource "aws_route_table" "private_rt" {
     vpc_id = aws_vpc.test1.id
     route {
-        cidr_block = "0.0.0.0/0"
+        cidr_block = var.vpc_cidr
         nat_gateway_id = aws_nat_gateway.nat_gw.id
     }
     tags = {
@@ -82,22 +82,22 @@ resource "aws_security_group" "vpc_sg" {
 
   ingress {
     description = "SSH"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = var.ssh_port
+    to_port     = var.ssh_port
+    protocol    = var.ssh_protocol
+    cidr_blocks = var.allowed_ssh_cidr
   }
   ingress {
     description = "HTTP"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = var.http_port
+    to_port     = var.http_port
+    protocol    = var.http_protocol
+    cidr_blocks = var.allowed_http_cidr
   }
     egress {
-        from_port   = 0
-        to_port     = 0
-        protocol    = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
+        from_port   = varegress_from_port
+        to_port     = var.egress_to_port
+        protocol    = var.egress_protocol
+        cidr_blocks = var.allowed_egress_cidr
     }
 }
